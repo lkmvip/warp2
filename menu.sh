@@ -1063,7 +1063,7 @@ uninstall() {
   }
 
   # 如已安装 warp_unlock 项目，先行卸载
-  [ -e /etc/wireguard/warp_unlock.sh ] && bash <(curl -sSL https://raw.githubusercontent.com/fscarmen/warp_unlock/main/unlock.sh) -U -$L
+  [ -e /etc/wireguard/warp_unlock.sh ] && bash <(curl -sSL https://raw.githubusercontent.com/lkmvip/warp2_unlock/main/unlock.sh) -U -$L
 
   # 根据已安装情况执行卸载任务并显示结果
   UNINSTALL_CHECK=("wg-quick" "warp-cli" "wireproxy")
@@ -1099,7 +1099,7 @@ uninstall() {
 # 同步脚本至最新版本
 ver() {
   mkdir -p /tmp; rm -f /tmp/menu.sh
-  wget -O /tmp/menu.sh https://raw.githubusercontent.com/fscarmen/warp/main/menu.sh
+  wget -O /tmp/menu.sh https://raw.githubusercontent.com/lkmvip/warp2/main/menu.sh
   if [ -s /tmp/menu.sh ]; then
     mv /tmp/menu.sh /etc/wireguard/
     chmod +x /etc/wireguard/menu.sh
@@ -1685,8 +1685,8 @@ best_mtu() {
 
 # 寻找最佳 Endpoint，根据 v4 / v6 情况下载 endpoint 库
 best_endpoint() {
-  wget $CDN -qO /tmp/endpoint https://raw.githubusercontent.com/fscarmen/warp/main/endpoint/warp-linux-"$ARCHITECTURE" && chmod +x /tmp/endpoint
-  [ "$IPV4$IPV6" = 01 ] && wget $CDN -qO /tmp/ip https://raw.githubusercontent.com/fscarmen/warp/main/endpoint/ipv6 || wget $CDN -qO /tmp/ip https://raw.githubusercontent.com/fscarmen/warp/main/endpoint/ipv4
+  wget $CDN -qO /tmp/endpoint https://raw.githubusercontent.com/lkmvip/warp2/main/endpoint/warp-linux-"$ARCHITECTURE" && chmod +x /tmp/endpoint
+  [ "$IPV4$IPV6" = 01 ] && wget $CDN -qO /tmp/ip https://raw.githubusercontent.com/lkmvip/warp2/main/endpoint/ipv6 || wget $CDN -qO /tmp/ip https://raw.githubusercontent.com/lkmvip/warp2/main/endpoint/ipv4
 
   if [[ -e /tmp/endpoint && -e /tmp/ip ]]; then
     /tmp/endpoint -file /tmp/ip -output /tmp/endpoint_result >/dev/null 2>&1
@@ -1752,7 +1752,7 @@ install() {
     latest=${latest:-'2.2.18'}
 
     # 安装 wgcf，尽量下载官方的最新版本，如官方 wgcf 下载不成功，将使用 githubusercontent，以更好的支持双栈。并添加执行权限
-    wget --no-check-certificate -T20 -t2 $CDN -O /usr/bin/wgcf https://raw.githubusercontent.com/fscarmen/warp/main/wgcf/wgcf_"$latest"_linux_$ARCHITECTURE
+    wget --no-check-certificate -T20 -t2 $CDN -O /usr/bin/wgcf https://raw.githubusercontent.com/lkmvip/warp2/main/wgcf/wgcf_"$latest"_linux_$ARCHITECTURE
     chmod +x /usr/bin/wgcf
 
     # 如安装 WireProxy ，尽量下载官方的最新版本，如官方 WireProxy 下载不成功，将使用 githubusercontent，以更好的支持双栈。并添加执行权限
@@ -1760,7 +1760,7 @@ install() {
       wireproxy_latest=$(wget --no-check-certificate -qO- -T1 -t1 $CDN "https://api.github.com/repos/octeep/wireproxy/releases/latest" | grep "tag_name" | head -n 1 | cut -d : -f2 | sed 's/[ \"v,]//g')
       wireproxy_latest=${wireproxy_latest:-'1.0.3'}
       wget --no-check-certificate -T1 -t1 $CDN -N https://github.com/octeep/wireproxy/releases/download/v"$wireproxy_latest"/wireproxy_linux_$ARCHITECTURE.tar.gz ||
-      wget --no-check-certificate $CDN -N https://raw.githubusercontent.com/fscarmen/warp/main/wireproxy/wireproxy_linux_$ARCHITECTURE.tar.gz
+      wget --no-check-certificate $CDN -N https://raw.githubusercontent.com/lkmvip/warp2/main/wireproxy/wireproxy_linux_$ARCHITECTURE.tar.gz
       [ $(type -p tar) ] || ${PACKAGE_INSTALL[int]} tar 2>/dev/null || ( ${PACKAGE_UPDATE[int]}; ${PACKAGE_INSTALL[int]} tar 2>/dev/null )
       tar xzf wireproxy_linux_$ARCHITECTURE.tar.gz -C /usr/bin/; rm -f wireproxy_linux*
     fi
@@ -2029,7 +2029,7 @@ EOF
     # Linux 内核低于5.6的，安装 Wireguard-GO。部分较低内核版本的KVM，即使安装了wireguard-dkms, 仍不能正常工作，兜底使用 wireguard-go
     if [ "$WG" = 1 ] || [[ $(systemctl is-active wg-quick@wgcf) != active ]] || [[ $(systemctl is-enabled wg-quick@wgcf) != enabled ]]; then
       systemctl disable --now wg-quick@wgcf >/dev/null 2>&1
-      wget --no-check-certificate $CDN -N https://raw.githubusercontent.com/fscarmen/warp/main/wireguard-go/wireguard-go_linux_"$ARCHITECTURE".tar.gz
+      wget --no-check-certificate $CDN -N https://raw.githubusercontent.com/lkmvip/warp2/main/wireguard-go/wireguard-go_linux_"$ARCHITECTURE".tar.gz
       [ $(type -p tar) ] || ${PACKAGE_INSTALL[int]} tar 2>/dev/null || ( ${PACKAGE_UPDATE[int]}; ${PACKAGE_INSTALL[int]} tar 2>/dev/null )
       tar xzf wireguard-go_linux_$ARCHITECTURE.tar.gz -C /usr/bin/ && rm -f wireguard-go_linux_* && chmod +x /usr/bin/wireguard-go
       ${SYSTEMCTL_ENABLE[int]} >/dev/null 2>&1
@@ -2577,7 +2577,7 @@ menu_setting() {
 
   ACTION[4]() { OPTION=o; onoff; }
   ACTION[5]() { client_install; }; ACTION[6]() { change_ip; }; ACTION[7]() { uninstall; }; ACTION[8]() { plus; }; ACTION[9]() { bbrInstall; }; ACTION[10]() { ver; }; 
-  ACTION[11]() { bash <(curl -sSL https://raw.githubusercontent.com/fscarmen/warp_unlock/main/unlock.sh) -$L; }; 
+  ACTION[11]() { bash <(curl -sSL https://raw.githubusercontent.com/lkmvip/warp2_unlock/main/unlock.sh) -$L; }; 
   ACTION[12]() { ANEMONE=1 ;install; }; 
   ACTION[13]() { OCTEEP=1; install; };
   ACTION[14]() { LUBAN=1; client_install; };
